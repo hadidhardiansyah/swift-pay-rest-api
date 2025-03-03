@@ -9,6 +9,7 @@ import static org.springframework.http.HttpStatus.*;
 public enum BusinessErrorCodes {
 
     INVALID_ACTIVATION_CODE(400, BAD_REQUEST, "The activation code is invalid"),
+    INVALID_CREDENTIALS(401, HttpStatus.UNAUTHORIZED, "Invalid username or password"),
     ACCOUNT_NOT_ACTIVATED(403, FORBIDDEN, "Your account is not activated"),
     USER_NOT_FOUND(404, NOT_FOUND ,"User not found"),
     ACCOUNT_ALREADY_ACTIVATED(405, METHOD_NOT_ALLOWED, "Your account is already activated"),

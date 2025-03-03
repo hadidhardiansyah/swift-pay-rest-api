@@ -1,6 +1,8 @@
 package com.hadid.swiftpay.controller;
 
+import com.hadid.swiftpay.dto.request.UserAuthenticationRequest;
 import com.hadid.swiftpay.dto.request.UserRegistrationRequest;
+import com.hadid.swiftpay.dto.response.UserAuthenticationResponse;
 import com.hadid.swiftpay.dto.response.UserRegistrationAndValidateResponse;
 import com.hadid.swiftpay.service.AuthenticationService;
 import jakarta.mail.MessagingException;
@@ -30,6 +32,12 @@ public class AuthenticationController {
     public ResponseEntity<UserRegistrationAndValidateResponse> activateAccount(@RequestParam String token) throws MessagingException {
         UserRegistrationAndValidateResponse response = authenticationService.activateAccount(token);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+    }
+
+    @PostMapping("/authenticate")
+    public ResponseEntity<UserAuthenticationResponse> authenticate(@RequestBody @Valid UserAuthenticationRequest request) throws MessagingException {
+        UserAuthenticationResponse response = authenticationService.authenticate(request);
+        return ResponseEntity.ok(response);
     }
 
 }

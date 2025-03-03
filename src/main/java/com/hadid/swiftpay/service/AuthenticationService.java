@@ -1,20 +1,27 @@
 package com.hadid.swiftpay.service;
 
+import com.hadid.swiftpay.dto.request.UserAuthenticationRequest;
 import com.hadid.swiftpay.dto.request.UserRegistrationRequest;
+import com.hadid.swiftpay.dto.response.UserAuthenticationResponse;
 import com.hadid.swiftpay.dto.response.UserRegistrationAndValidateResponse;
 import com.hadid.swiftpay.entity.Authentication;
 import com.hadid.swiftpay.entity.User;
+import com.hadid.swiftpay.entity.UserPrincipal;
 import com.hadid.swiftpay.enums.EmailTemplateName;
 import com.hadid.swiftpay.exception.BusinessException;
 import com.hadid.swiftpay.repository.AuthenticationRepository;
 import com.hadid.swiftpay.repository.UserRepository;
+import com.hadid.swiftpay.security.JwtService;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 
 import static com.hadid.swiftpay.exception.BusinessErrorCodes.*;
 
@@ -28,7 +35,11 @@ public class AuthenticationService {
 
     private final EmailService emailService;
 
+    private final JwtService jwtService;
+
     private final PasswordEncoder passwordEncoder;
+
+    private final AuthenticationManager authenticationManager;
 
     public UserRegistrationAndValidateResponse register(UserRegistrationRequest request) throws MessagingException {
         validateUserUniqueness(request);
@@ -52,7 +63,7 @@ public class AuthenticationService {
     }
 
     private void validateUserUniqueness(UserRegistrationRequest request) throws BusinessException {
-        if (userRepository.existsByUsernameOrEmail(request.getUsername(), request.getEmail())) {
+        if (userRepository.findByUsernameOrEmail(request.getUsername(), request.getEmail()).isPresent()) {
             throw new BusinessException(USERNAME_OR_EMAIL_ALREADY_EXISTS);
         }
     }
@@ -121,6 +132,27 @@ public class AuthenticationService {
 
         return UserRegistrationAndValidateResponse.builder()
                 .message("User successfully activated")
+                .status("success")
+                .build();
+    }
+
+    public UserAuthenticationResponse authenticate(UserAuthenticationRequest request) throws MessagingException {
+        var auth = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getUsernameOrEmail(),
+                        request.getPassword()
+                )
+        );
+
+        var user = (UserPrincipal) auth.getPrincipal();
+
+        var claims = new HashMap<String, Object>();
+        claims.put("fullName", user.getUser().fullName());
+
+        var jwtToken = jwtService.generateToken(claims, user);
+
+        return UserAuthenticationResponse.builder()
+                .token(jwtToken)
                 .status("success")
                 .build();
     }

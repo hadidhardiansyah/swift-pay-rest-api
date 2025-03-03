@@ -10,7 +10,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import static com.hadid.swiftpay.exception.BusinessErrorCodes.USER_NOT_FOUND;
+import static com.hadid.swiftpay.exception.BusinessErrorCodes.ACCOUNT_NOT_ACTIVATED;
+import static com.hadid.swiftpay.exception.BusinessErrorCodes.INVALID_CREDENTIALS;
 
 @Service
 @RequiredArgsConstructor
@@ -19,9 +20,13 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final UserRepository userRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new BusinessException(USER_NOT_FOUND));
+    public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
+        User user = userRepository.findByUsernameOrEmail(usernameOrEmail, usernameOrEmail)
+                .orElseThrow(() -> new BusinessException(INVALID_CREDENTIALS));
+
+        if (!user.isEnabled()) {
+            throw new BusinessException(ACCOUNT_NOT_ACTIVATED);
+        }
 
         return new UserPrincipal(user);
     }
