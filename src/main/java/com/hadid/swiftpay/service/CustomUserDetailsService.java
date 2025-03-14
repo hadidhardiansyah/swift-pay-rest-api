@@ -20,8 +20,8 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final UserRepository userRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
-        User user = userRepository.findByUsernameOrEmail(usernameOrEmail, usernameOrEmail)
+    public UserDetails loadUserByUsername(String credential) throws UsernameNotFoundException {
+        User user = userRepository.findByIdentifier(credential)
                 .orElseThrow(() -> new BusinessException(INVALID_CREDENTIALS));
 
         if (!user.isEnabled()) {

@@ -6,12 +6,11 @@ import com.hadid.swiftpay.dto.response.UserAuthenticationResponse;
 import com.hadid.swiftpay.dto.response.UserRegistrationAndValidateResponse;
 import com.hadid.swiftpay.service.AuthenticationService;
 import jakarta.mail.MessagingException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import javax.validation.Valid;
 
 import static org.springframework.http.HttpStatus.CREATED;
 
@@ -32,6 +31,12 @@ public class AuthenticationController {
     public ResponseEntity<UserRegistrationAndValidateResponse> activateAccount(@RequestParam String token) throws MessagingException {
         UserRegistrationAndValidateResponse response = authenticationService.activateAccount(token);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+    }
+
+    @PostMapping("/resend-activation")
+    public ResponseEntity<UserRegistrationAndValidateResponse> resendActivation(@RequestParam String email) throws MessagingException {
+        var response = authenticationService.resendActivationEmail(email);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/authenticate")

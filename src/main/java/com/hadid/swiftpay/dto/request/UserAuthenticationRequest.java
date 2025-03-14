@@ -1,13 +1,11 @@
 package com.hadid.swiftpay.dto.request;
 
+import com.hadid.swiftpay.common.validator.ValidPassword;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.Size;
 
 @Getter
 @Setter
@@ -20,7 +18,7 @@ public class UserAuthenticationRequest {
 
     @NotEmpty(message = "Password is mandatory")
     @NotBlank(message = "Password is mandatory")
-    @Size(min = 8, message = "Password should be 8 characters long minimum")
+    @ValidPassword
     private String password;
 
 }

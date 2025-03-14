@@ -1,13 +1,10 @@
 package com.hadid.swiftpay.dto.request;
 
+import com.hadid.swiftpay.common.validator.ValidPassword;
+import jakarta.validation.constraints.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.Size;
 
 @Getter
 @Setter
@@ -22,6 +19,12 @@ public class UserRegistrationRequest {
     @NotBlank(message = "Lastname is mandatory")
     private String lastName;
 
+    @Pattern(regexp = "^[0-9]+$", message = "Phone number must contain only digits")
+    @Size(min = 10, max = 13, message = "Phone number must be between 10 and 13 digits")
+    @NotEmpty(message = "Phone Number is mandatory")
+    @NotBlank(message = "Phone Number is mandatory")
+    private String phoneNumber;
+
     @NotEmpty(message = "Username is mandatory")
     @NotBlank(message = "Username is mandatory")
     private String username;
@@ -33,7 +36,7 @@ public class UserRegistrationRequest {
 
     @NotEmpty(message = "Password is mandatory")
     @NotBlank(message = "Password is mandatory")
-    @Size(min = 8, message = "Password should be 8 characters long minimum")
+    @ValidPassword
     private String password;
 
 }

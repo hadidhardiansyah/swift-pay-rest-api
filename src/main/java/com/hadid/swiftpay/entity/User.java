@@ -20,6 +20,8 @@ public class User {
 
     private String lastName;
 
+    private String phoneNumber;
+
     @Column(unique = true)
     private String username;
 

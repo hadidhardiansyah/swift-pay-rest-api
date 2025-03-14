@@ -15,6 +15,7 @@ import com.hadid.swiftpay.security.JwtService;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,8 @@ import org.springframework.stereotype.Service;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 import static com.hadid.swiftpay.exception.BusinessErrorCodes.*;
 
@@ -47,6 +50,7 @@ public class AuthenticationService {
         var user = User.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
+                .phoneNumber(request.getPhoneNumber())
                 .username(request.getUsername())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
@@ -63,7 +67,13 @@ public class AuthenticationService {
     }
 
     private void validateUserUniqueness(UserRegistrationRequest request) throws BusinessException {
-        if (userRepository.findByUsernameOrEmail(request.getUsername(), request.getEmail()).isPresent()) {
+        boolean exists = userRepository.existsByUsernameOrEmailOrPhoneNumber(
+                request.getUsername(),
+                request.getEmail(),
+                request.getPhoneNumber()
+        );
+
+        if (exists) {
             throw new BusinessException(USERNAME_OR_EMAIL_ALREADY_EXISTS);
         }
     }
@@ -136,25 +146,45 @@ public class AuthenticationService {
                 .build();
     }
 
-    public UserAuthenticationResponse authenticate(UserAuthenticationRequest request) throws MessagingException {
-        var auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getUsernameOrEmail(),
-                        request.getPassword()
-                )
-        );
+    public UserRegistrationAndValidateResponse resendActivationEmail(String identifier) throws MessagingException {
+        var user = userRepository.findByIdentifier(identifier)
+                .orElseThrow(() -> new BusinessException(USER_NOT_FOUND));
 
-        var user = (UserPrincipal) auth.getPrincipal();
+        if (user.isEnabled()) {
+            throw new BusinessException(ACCOUNT_ALREADY_ACTIVATED);
+        }
 
-        var claims = new HashMap<String, Object>();
-        claims.put("fullName", user.getUser().fullName());
+        sendValidationEmail(user);
 
-        var jwtToken = jwtService.generateToken(claims, user);
-
-        return UserAuthenticationResponse.builder()
-                .token(jwtToken)
+        return UserRegistrationAndValidateResponse.builder()
+                .message("Activation email has been resent")
                 .status("success")
                 .build();
+    }
+
+    public UserAuthenticationResponse authenticate(UserAuthenticationRequest request) throws MessagingException {
+        try {
+            var auth = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getUsernameOrEmail(),
+                            request.getPassword()
+                    )
+            );
+
+            var user = (UserPrincipal) auth.getPrincipal();
+
+            var claims = new HashMap<String, Object>();
+            claims.put("fullName", user.getUser().fullName());
+
+            var jwtToken = jwtService.generateToken(claims, user);
+
+            return UserAuthenticationResponse.builder()
+                    .token(jwtToken)
+                    .status("success")
+                    .build();
+        } catch (BadCredentialsException e) {
+            throw new BusinessException(INVALID_CREDENTIALS);
+        }
     }
 
 }
