@@ -13,6 +13,7 @@ import com.hadid.swiftpay.repository.AuthenticationRepository;
 import com.hadid.swiftpay.repository.UserRepository;
 import com.hadid.swiftpay.security.JwtService;
 import jakarta.mail.MessagingException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -39,6 +40,8 @@ public class AuthenticationService {
     private final EmailService emailService;
 
     private final JwtService jwtService;
+
+    private final WalletService walletService;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -120,6 +123,7 @@ public class AuthenticationService {
         return codeBuilder.toString();
     }
 
+    @Transactional
     public UserRegistrationAndValidateResponse activateAccount(String token) throws MessagingException {
         Authentication savedToken = authenticationRepository.findByToken(token)
                 .orElseThrow(() -> new BusinessException(INVALID_ACTIVATION_CODE));
@@ -139,6 +143,8 @@ public class AuthenticationService {
         userRepository.save(user);
         savedToken.setValidatedAt(LocalDateTime.now());
         authenticationRepository.save(savedToken);
+
+        walletService.createWallet(user);
 
         return UserRegistrationAndValidateResponse.builder()
                 .message("User successfully activated")

@@ -36,4 +36,7 @@ public class User {
         return firstName + " " + lastName;
     }
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private Wallet wallet;
+
 }
