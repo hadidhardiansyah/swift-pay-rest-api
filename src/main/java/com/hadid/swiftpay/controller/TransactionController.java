@@ -1,7 +1,9 @@
 package com.hadid.swiftpay.controller;
 
+import com.hadid.swiftpay.dto.request.PaymentRequest;
 import com.hadid.swiftpay.dto.request.TransferRequest;
 import com.hadid.swiftpay.dto.response.TransactionResponse;
+import com.hadid.swiftpay.service.PaymentService;
 import com.hadid.swiftpay.service.TransferService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,9 +21,17 @@ public class TransactionController {
 
     private final TransferService transferService;
 
+    private final PaymentService paymentService;
+
     @PostMapping("/transfer")
-    public ResponseEntity<TransactionResponse> transfer(@Valid @RequestBody TransferRequest request, Authentication connectedUser) {
+    public ResponseEntity<TransactionResponse> transfer(@RequestBody TransferRequest request, Authentication connectedUser) {
         TransactionResponse response = transferService.transfer(request, connectedUser);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/payment")
+    public ResponseEntity<TransactionResponse> payment(@RequestBody PaymentRequest request, Authentication connectedUser) {
+        TransactionResponse response = paymentService.createPayment(request, connectedUser);
         return ResponseEntity.ok(response);
     }
 

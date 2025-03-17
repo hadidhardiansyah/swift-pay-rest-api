@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 
 import static com.hadid.swiftpay.enums.TransactionStatus.PENDING;
+import static com.hadid.swiftpay.exception.BusinessErrorCodes.DESTINATION_WALLET_REQUIRED;
 import static com.hadid.swiftpay.exception.BusinessErrorCodes.TRANSACTION_NOT_FOUND;
 
 @Service
@@ -23,6 +24,10 @@ public class TransactionService {
 
     @Transactional
     public Transaction createTransaction(Wallet sourceWallet, Wallet destinationWallet, BigDecimal amount, TransactionType type) {
+        if (destinationWallet == null && type == TransactionType.TRANSFER) {
+            throw new BusinessException(DESTINATION_WALLET_REQUIRED);
+        }
+
         Transaction transaction = Transaction.builder()
                 .sourceWallet(sourceWallet)
                 .destinationWallet(destinationWallet)

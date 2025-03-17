@@ -28,7 +28,7 @@ public class Transaction {
     private Wallet sourceWallet;
 
     @ManyToOne
-    @JoinColumn(name = "destination_wallet_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "destination_wallet_id", referencedColumnName = "id", nullable = true)
     private Wallet destinationWallet;
 
     @Enumerated(EnumType.STRING)
