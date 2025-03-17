@@ -8,7 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class TransactionResponse {
+public class ActionTransactionResponse {
 
     private String message;
 

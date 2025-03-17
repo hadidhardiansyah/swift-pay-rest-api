@@ -1,7 +1,7 @@
 package com.hadid.swiftpay.service;
 
 import com.hadid.swiftpay.dto.request.TopUpRequest;
-import com.hadid.swiftpay.dto.response.TransactionResponse;
+import com.hadid.swiftpay.dto.response.ActionTransactionResponse;
 import com.hadid.swiftpay.entity.Transaction;
 import com.hadid.swiftpay.entity.UserPrincipal;
 import com.hadid.swiftpay.entity.Wallet;
@@ -29,7 +29,7 @@ public class TopUpService {
     private final TransactionService transactionService;
 
     @Transactional
-    public TransactionResponse topUp(TopUpRequest request, Authentication connectedUser) {
+    public ActionTransactionResponse topUp(TopUpRequest request, Authentication connectedUser) {
         UserPrincipal userPrincipal = (UserPrincipal) connectedUser.getPrincipal();
         Wallet destinationWallet = walletRepository.findByUserId(request.getUserId())
                 .orElseThrow(() -> new BusinessException(DESTINATION_WALLET_NOT_FOUND));
@@ -49,7 +49,7 @@ public class TopUpService {
 
             transactionService.updateTransactionStatus(newTransaction.getId(), SUCCESS);
 
-            return TransactionResponse.builder()
+            return ActionTransactionResponse.builder()
                     .message("Top up successful")
                     .status("success")
                     .type(TOP_UP)

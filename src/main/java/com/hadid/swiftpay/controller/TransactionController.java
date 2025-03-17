@@ -4,7 +4,7 @@ import com.hadid.swiftpay.dto.request.BillPaymentRequest;
 import com.hadid.swiftpay.dto.request.PaymentRequest;
 import com.hadid.swiftpay.dto.request.TopUpRequest;
 import com.hadid.swiftpay.dto.request.TransferRequest;
-import com.hadid.swiftpay.dto.response.TransactionResponse;
+import com.hadid.swiftpay.dto.response.ActionTransactionResponse;
 import com.hadid.swiftpay.service.BillPaymentService;
 import com.hadid.swiftpay.service.PaymentService;
 import com.hadid.swiftpay.service.TopUpService;
@@ -32,26 +32,26 @@ public class TransactionController {
     private final TransferService transferService;
 
     @PostMapping("/transfer")
-    public ResponseEntity<TransactionResponse> transfer(@RequestBody TransferRequest request, Authentication connectedUser) {
-        TransactionResponse response = transferService.transfer(request, connectedUser);
+    public ResponseEntity<ActionTransactionResponse> transfer(@RequestBody TransferRequest request, Authentication connectedUser) {
+        ActionTransactionResponse response = transferService.transfer(request, connectedUser);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/payment")
-    public ResponseEntity<TransactionResponse> payment(@RequestBody PaymentRequest request, Authentication connectedUser) {
-        TransactionResponse response = paymentService.createPayment(request, connectedUser);
+    public ResponseEntity<ActionTransactionResponse> payment(@RequestBody PaymentRequest request, Authentication connectedUser) {
+        ActionTransactionResponse response = paymentService.createPayment(request, connectedUser);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/bill-payment")
-    public ResponseEntity<TransactionResponse> payBill(@Valid @RequestBody BillPaymentRequest request, Authentication connectedUser) {
-        TransactionResponse response = billPaymentService.payBill(request, connectedUser);
+    public ResponseEntity<ActionTransactionResponse> payBill(@Valid @RequestBody BillPaymentRequest request, Authentication connectedUser) {
+        ActionTransactionResponse response = billPaymentService.payBill(request, connectedUser);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/topup")
-    public ResponseEntity<TransactionResponse> topUp(@RequestBody TopUpRequest request, Authentication connectedUser) {
-        TransactionResponse response = topUpService.topUp(request, connectedUser);
+    public ResponseEntity<ActionTransactionResponse> topUp(@RequestBody TopUpRequest request, Authentication connectedUser) {
+        ActionTransactionResponse response = topUpService.topUp(request, connectedUser);
         return ResponseEntity.ok(response);
     }
 

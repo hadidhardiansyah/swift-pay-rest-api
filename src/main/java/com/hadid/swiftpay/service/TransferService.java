@@ -1,7 +1,7 @@
 package com.hadid.swiftpay.service;
 
 import com.hadid.swiftpay.dto.request.TransferRequest;
-import com.hadid.swiftpay.dto.response.TransactionResponse;
+import com.hadid.swiftpay.dto.response.ActionTransactionResponse;
 import com.hadid.swiftpay.entity.Transaction;
 import com.hadid.swiftpay.entity.UserPrincipal;
 import com.hadid.swiftpay.entity.Wallet;
@@ -29,7 +29,7 @@ public class TransferService {
     private final TransactionService transactionService;
 
     @Transactional
-    public TransactionResponse transfer(TransferRequest request, Authentication connectedUser) {
+    public ActionTransactionResponse transfer(TransferRequest request, Authentication connectedUser) {
         UserPrincipal userPrincipal = (UserPrincipal) connectedUser.getPrincipal();
         Wallet sourceWallet = walletRepository.findByUserId(request.getSourceWalletId())
                 .orElseThrow(() -> new BusinessException(SOURCE_WALLET_NOT_FOUND));
@@ -58,7 +58,7 @@ public class TransferService {
 
             transactionService.updateTransactionStatus(newTransaction.getId(), SUCCESS);
 
-            return TransactionResponse.builder()
+            return ActionTransactionResponse.builder()
                     .message("Transfer successful")
                     .status("success")
                     .type(TRANSFER)

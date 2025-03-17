@@ -1,7 +1,7 @@
 package com.hadid.swiftpay.service;
 
 import com.hadid.swiftpay.dto.request.BillPaymentRequest;
-import com.hadid.swiftpay.dto.response.TransactionResponse;
+import com.hadid.swiftpay.dto.response.ActionTransactionResponse;
 import com.hadid.swiftpay.entity.Transaction;
 import com.hadid.swiftpay.entity.UserPrincipal;
 import com.hadid.swiftpay.entity.Wallet;
@@ -30,7 +30,7 @@ public class BillPaymentService {
     private final TransactionService transactionService;
 
     @Transactional
-    public TransactionResponse payBill(BillPaymentRequest request, Authentication connectedUser) {
+    public ActionTransactionResponse payBill(BillPaymentRequest request, Authentication connectedUser) {
         UserPrincipal userPrincipal = (UserPrincipal) connectedUser.getPrincipal();
         Wallet sourceWallet = walletRepository.findByUserId(request.getUserId())
                 .orElseThrow(() -> new BusinessException(SOURCE_WALLET_NOT_FOUND));
@@ -54,7 +54,7 @@ public class BillPaymentService {
             
             transactionService.updateTransactionStatus(newTransaction.getId(), SUCCESS);
             
-            return TransactionResponse.builder()
+            return ActionTransactionResponse.builder()
                     .message("Pay bill successful")
                     .status("success")
                     .type(BILL_PAYMENT)
