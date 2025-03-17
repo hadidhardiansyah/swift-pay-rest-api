@@ -7,6 +7,7 @@ import com.hadid.swiftpay.entity.UserPrincipal;
 import com.hadid.swiftpay.entity.Wallet;
 import com.hadid.swiftpay.exception.BusinessException;
 import com.hadid.swiftpay.repository.WalletRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -28,6 +29,7 @@ public class PaymentService {
 
     private final TransactionService transactionService;
 
+    @Transactional
     public TransactionResponse createPayment(PaymentRequest request, Authentication connectedUser) {
         UserPrincipal userPrincipal = (UserPrincipal) connectedUser.getPrincipal();
         Wallet sourceWallet = walletRepository.findByUserId(request.getUserId())

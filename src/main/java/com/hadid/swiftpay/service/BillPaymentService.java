@@ -1,6 +1,6 @@
 package com.hadid.swiftpay.service;
 
-import com.hadid.swiftpay.dto.request.TransferRequest;
+import com.hadid.swiftpay.dto.request.BillPaymentRequest;
 import com.hadid.swiftpay.dto.response.TransactionResponse;
 import com.hadid.swiftpay.entity.Transaction;
 import com.hadid.swiftpay.entity.UserPrincipal;
@@ -17,29 +17,27 @@ import java.math.BigDecimal;
 
 import static com.hadid.swiftpay.enums.TransactionStatus.FAILED;
 import static com.hadid.swiftpay.enums.TransactionStatus.SUCCESS;
-import static com.hadid.swiftpay.enums.TransactionType.TRANSFER;
-import static com.hadid.swiftpay.exception.BusinessErrorCodes.*;
+import static com.hadid.swiftpay.enums.TransactionType.BILL_PAYMENT;
+import static com.hadid.swiftpay.exception.BusinessErrorCodes.INSUFFICIENT_BALANCE;
+import static com.hadid.swiftpay.exception.BusinessErrorCodes.SOURCE_WALLET_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
-public class TransferService {
+public class BillPaymentService {
 
     private final WalletRepository walletRepository;
 
     private final TransactionService transactionService;
 
     @Transactional
-    public TransactionResponse transfer(TransferRequest request, Authentication connectedUser) {
+    public TransactionResponse payBill(BillPaymentRequest request, Authentication connectedUser) {
         UserPrincipal userPrincipal = (UserPrincipal) connectedUser.getPrincipal();
-        Wallet sourceWallet = walletRepository.findByUserId(request.getSourceWalletId())
+        Wallet sourceWallet = walletRepository.findByUserId(request.getUserId())
                 .orElseThrow(() -> new BusinessException(SOURCE_WALLET_NOT_FOUND));
 
         if (!sourceWallet.getUser().getId().equals(userPrincipal.getUser().getId())) {
             throw new AccessDeniedException("Unauthorized to access this wallet");
         }
-
-        Wallet destinationWallet = walletRepository.findByUserId(request.getDestinationWalletId())
-                .orElseThrow(() -> new BusinessException(DESTINATION_WALLET_NOT_FOUND));
 
         BigDecimal amount = request.getAmount();
 
@@ -47,26 +45,25 @@ public class TransferService {
             throw new BusinessException(INSUFFICIENT_BALANCE);
         }
 
-        Transaction newTransaction = transactionService.createTransaction(sourceWallet, destinationWallet, amount, TRANSFER);
-
+        Transaction newTransaction = transactionService.createTransaction(sourceWallet, null, amount, BILL_PAYMENT);
+        
         try {
             sourceWallet.setBalance(sourceWallet.getBalance().subtract(amount));
-            destinationWallet.setBalance(destinationWallet.getBalance().add(amount));
-
+            
             walletRepository.save(sourceWallet);
-            walletRepository.save(destinationWallet);
-
+            
             transactionService.updateTransactionStatus(newTransaction.getId(), SUCCESS);
-
+            
             return TransactionResponse.builder()
-                    .message("Transfer successful")
+                    .message("Pay bill successful")
                     .status("success")
-                    .type(TRANSFER)
+                    .type(BILL_PAYMENT)
                     .build();
         } catch (Exception e) {
             transactionService.updateTransactionStatus(newTransaction.getId(), FAILED);
             throw e;
         }
     }
+
 
 }

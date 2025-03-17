@@ -1,8 +1,10 @@
 package com.hadid.swiftpay.controller;
 
+import com.hadid.swiftpay.dto.request.BillPaymentRequest;
 import com.hadid.swiftpay.dto.request.PaymentRequest;
 import com.hadid.swiftpay.dto.request.TransferRequest;
 import com.hadid.swiftpay.dto.response.TransactionResponse;
+import com.hadid.swiftpay.service.BillPaymentService;
 import com.hadid.swiftpay.service.PaymentService;
 import com.hadid.swiftpay.service.TransferService;
 import jakarta.validation.Valid;
@@ -19,9 +21,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/transaction")
 public class TransactionController {
 
-    private final TransferService transferService;
+    private final BillPaymentService billPaymentService;
 
     private final PaymentService paymentService;
+
+    private final TransferService transferService;
 
     @PostMapping("/transfer")
     public ResponseEntity<TransactionResponse> transfer(@RequestBody TransferRequest request, Authentication connectedUser) {
@@ -32,6 +36,12 @@ public class TransactionController {
     @PostMapping("/payment")
     public ResponseEntity<TransactionResponse> payment(@RequestBody PaymentRequest request, Authentication connectedUser) {
         TransactionResponse response = paymentService.createPayment(request, connectedUser);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/bill-payment")
+    public ResponseEntity<TransactionResponse> payBill(@Valid @RequestBody BillPaymentRequest request, Authentication connectedUser) {
+        TransactionResponse response = billPaymentService.payBill(request, connectedUser);
         return ResponseEntity.ok(response);
     }
 
