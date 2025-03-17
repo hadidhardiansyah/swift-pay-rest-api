@@ -5,18 +5,13 @@ import com.hadid.swiftpay.dto.request.PaymentRequest;
 import com.hadid.swiftpay.dto.request.TopUpRequest;
 import com.hadid.swiftpay.dto.request.TransferRequest;
 import com.hadid.swiftpay.dto.response.ActionTransactionResponse;
-import com.hadid.swiftpay.service.BillPaymentService;
-import com.hadid.swiftpay.service.PaymentService;
-import com.hadid.swiftpay.service.TopUpService;
-import com.hadid.swiftpay.service.TransferService;
+import com.hadid.swiftpay.dto.response.TransactionListResponse;
+import com.hadid.swiftpay.service.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
@@ -30,6 +25,14 @@ public class TransactionController {
     private final TopUpService topUpService;
 
     private final TransferService transferService;
+
+    private final TransactionService transactionService;
+
+    @GetMapping
+    public ResponseEntity<TransactionListResponse> getAllTransactions(Authentication connectedUser) {
+        TransactionListResponse response = transactionService.getAllTransactions(connectedUser);
+        return ResponseEntity.ok(response);
+    }
 
     @PostMapping("/transfer")
     public ResponseEntity<ActionTransactionResponse> transfer(@RequestBody TransferRequest request, Authentication connectedUser) {

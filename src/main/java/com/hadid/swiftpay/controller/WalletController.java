@@ -1,6 +1,6 @@
 package com.hadid.swiftpay.controller;
 
-import com.hadid.swiftpay.entity.Wallet;
+import com.hadid.swiftpay.dto.response.WalletResponse;
 import com.hadid.swiftpay.service.WalletService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,9 +17,9 @@ public class WalletController {
     private final WalletService walletService;
 
     @GetMapping
-    public ResponseEntity<Wallet> getWallet(Authentication connectedUser) {
-        Wallet wallet = walletService.getWallet(connectedUser);
-        return ResponseEntity.ok(wallet);
+    public ResponseEntity<WalletResponse> getWallet(Authentication connectedUser) {
+        WalletResponse response = walletService.getWallet(connectedUser);
+        return ResponseEntity.ok(response);
     }
 
 }

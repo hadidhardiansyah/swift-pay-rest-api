@@ -1,9 +1,11 @@
 package com.hadid.swiftpay.service;
 
+import com.hadid.swiftpay.dto.response.WalletResponse;
 import com.hadid.swiftpay.entity.User;
 import com.hadid.swiftpay.entity.UserPrincipal;
 import com.hadid.swiftpay.entity.Wallet;
 import com.hadid.swiftpay.exception.BusinessException;
+import com.hadid.swiftpay.mapper.WallerMapper;
 import com.hadid.swiftpay.repository.WalletRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -17,6 +19,8 @@ import static com.hadid.swiftpay.exception.BusinessErrorCodes.WALLET_NOT_FOUND;
 @RequiredArgsConstructor
 public class WalletService {
 
+    private final WallerMapper wallerMapper;
+
     private final WalletRepository walletRepository;
 
     public void createWallet(User user) {
@@ -28,11 +32,13 @@ public class WalletService {
         walletRepository.save(wallet);
     }
 
-    public Wallet getWallet(Authentication connectedUser) {
+    public WalletResponse getWallet(Authentication connectedUser) {
         UserPrincipal userPrincipal = (UserPrincipal) connectedUser.getPrincipal();
 
-        return walletRepository.findByUserId(userPrincipal.getUser().getId())
+        Wallet wallet = walletRepository.findByUserId(userPrincipal.getUser().getId())
                 .orElseThrow(() -> new BusinessException(WALLET_NOT_FOUND));
+
+        return wallerMapper.toWalletResponse(wallet);
     }
 
 }
