@@ -1,5 +1,6 @@
 package com.hadid.swiftpay.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -23,6 +24,7 @@ public class Wallet {
 
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
+    @JsonIgnoreProperties({"wallet", "password"})
     private User user;
 
     private BigDecimal balance = BigDecimal.valueOf(0);

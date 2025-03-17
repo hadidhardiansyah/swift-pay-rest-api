@@ -19,7 +19,8 @@ public enum BusinessErrorCodes {
     ACCOUNT_ALREADY_ACTIVATED(408, METHOD_NOT_ALLOWED, "Your account is already activated"),
     USERNAME_OR_EMAIL_ALREADY_EXISTS(409, CONFLICT, "Username or email is already registered"),
     EXPIRED_ACTIVATION_CODE(410, GONE, "Activation token has expired. A new token has been sent to the same email address"),
-    DESTINATION_WALLET_REQUIRED(411, BAD_REQUEST, "Destination wallet is required for this type of transaction");
+    DESTINATION_WALLET_REQUIRED(411, BAD_REQUEST, "Destination wallet is required for this type of transaction"),
+    WALLET_NOT_FOUND(412, NOT_FOUND, "Wallet not found");
 
     private final int code;
 
