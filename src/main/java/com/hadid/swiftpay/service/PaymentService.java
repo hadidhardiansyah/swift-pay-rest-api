@@ -41,7 +41,7 @@ public class PaymentService {
 
         BigDecimal amount = request.getAmount();
 
-        if (sourceWallet.getBalance().compareTo(amount) < 0) {
+        if (sourceWallet.getBalance().compareTo(amount) <= 0) {
             throw new BusinessException(INSUFFICIENT_BALANCE);
         }
 

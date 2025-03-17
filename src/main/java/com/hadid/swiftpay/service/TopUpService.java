@@ -1,6 +1,6 @@
 package com.hadid.swiftpay.service;
 
-import com.hadid.swiftpay.dto.request.BillPaymentRequest;
+import com.hadid.swiftpay.dto.request.TopUpRequest;
 import com.hadid.swiftpay.dto.response.TransactionResponse;
 import com.hadid.swiftpay.entity.Transaction;
 import com.hadid.swiftpay.entity.UserPrincipal;
@@ -17,53 +17,47 @@ import java.math.BigDecimal;
 
 import static com.hadid.swiftpay.enums.TransactionStatus.FAILED;
 import static com.hadid.swiftpay.enums.TransactionStatus.SUCCESS;
-import static com.hadid.swiftpay.enums.TransactionType.BILL_PAYMENT;
-import static com.hadid.swiftpay.exception.BusinessErrorCodes.INSUFFICIENT_BALANCE;
-import static com.hadid.swiftpay.exception.BusinessErrorCodes.SOURCE_WALLET_NOT_FOUND;
+import static com.hadid.swiftpay.enums.TransactionType.TOP_UP;
+import static com.hadid.swiftpay.exception.BusinessErrorCodes.*;
 
 @Service
 @RequiredArgsConstructor
-public class BillPaymentService {
+public class TopUpService {
 
     private final WalletRepository walletRepository;
 
     private final TransactionService transactionService;
 
     @Transactional
-    public TransactionResponse payBill(BillPaymentRequest request, Authentication connectedUser) {
+    public TransactionResponse topUp(TopUpRequest request, Authentication connectedUser) {
         UserPrincipal userPrincipal = (UserPrincipal) connectedUser.getPrincipal();
-        Wallet sourceWallet = walletRepository.findByUserId(request.getUserId())
-                .orElseThrow(() -> new BusinessException(SOURCE_WALLET_NOT_FOUND));
+        Wallet destinationWallet = walletRepository.findByUserId(request.getUserId())
+                .orElseThrow(() -> new BusinessException(DESTINATION_WALLET_NOT_FOUND));
 
-        if (!sourceWallet.getUser().getId().equals(userPrincipal.getUser().getId())) {
+        if (!destinationWallet.getUser().getId().equals(userPrincipal.getUser().getId())) {
             throw new AccessDeniedException("Unauthorized to access this wallet");
         }
 
         BigDecimal amount = request.getAmount();
 
-        if (sourceWallet.getBalance().compareTo(amount) <= 0) {
-            throw new BusinessException(INSUFFICIENT_BALANCE);
-        }
+        Transaction newTransaction = transactionService.createTransaction(null, destinationWallet, amount, TOP_UP);
 
-        Transaction newTransaction = transactionService.createTransaction(sourceWallet, null, amount, BILL_PAYMENT);
-        
         try {
-            sourceWallet.setBalance(sourceWallet.getBalance().subtract(amount));
-            
-            walletRepository.save(sourceWallet);
-            
+            destinationWallet.setBalance(destinationWallet.getBalance().add(amount));
+
+            walletRepository.save(destinationWallet);
+
             transactionService.updateTransactionStatus(newTransaction.getId(), SUCCESS);
-            
+
             return TransactionResponse.builder()
-                    .message("Pay bill successful")
+                    .message("Top up successful")
                     .status("success")
-                    .type(BILL_PAYMENT)
+                    .type(TOP_UP)
                     .build();
         } catch (Exception e) {
             transactionService.updateTransactionStatus(newTransaction.getId(), FAILED);
             throw e;
         }
     }
-
 
 }

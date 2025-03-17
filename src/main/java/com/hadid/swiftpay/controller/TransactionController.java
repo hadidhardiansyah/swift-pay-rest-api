@@ -2,10 +2,12 @@ package com.hadid.swiftpay.controller;
 
 import com.hadid.swiftpay.dto.request.BillPaymentRequest;
 import com.hadid.swiftpay.dto.request.PaymentRequest;
+import com.hadid.swiftpay.dto.request.TopUpRequest;
 import com.hadid.swiftpay.dto.request.TransferRequest;
 import com.hadid.swiftpay.dto.response.TransactionResponse;
 import com.hadid.swiftpay.service.BillPaymentService;
 import com.hadid.swiftpay.service.PaymentService;
+import com.hadid.swiftpay.service.TopUpService;
 import com.hadid.swiftpay.service.TransferService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,8 @@ public class TransactionController {
 
     private final PaymentService paymentService;
 
+    private final TopUpService topUpService;
+
     private final TransferService transferService;
 
     @PostMapping("/transfer")
@@ -42,6 +46,12 @@ public class TransactionController {
     @PostMapping("/bill-payment")
     public ResponseEntity<TransactionResponse> payBill(@Valid @RequestBody BillPaymentRequest request, Authentication connectedUser) {
         TransactionResponse response = billPaymentService.payBill(request, connectedUser);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/topup")
+    public ResponseEntity<TransactionResponse> topUp(@RequestBody TopUpRequest request, Authentication connectedUser) {
+        TransactionResponse response = topUpService.topUp(request, connectedUser);
         return ResponseEntity.ok(response);
     }
 
